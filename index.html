@@ -1,342 +1,978 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vedic Astrology, Lo Shu Grid & Name Correction App</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vedic & Lo Shu Numerology Suite</title>
   <style>
+    :root {
+      --bg-dark: #0f1021;
+      --bg-card: #191b34;
+      --bg-card-alt: #222546;
+      --accent: #f5b041;
+      --accent-glow: rgba(245, 176, 65, 0.25);
+      --primary: #8e44ad;
+      --secondary: #3498db;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --text-main: #f4f5f7;
+      --text-muted: #a3a8c3;
+      --border: #2e325a;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
     body {
-      background: radial-gradient(circle at top, #1e1b4b, #090d16);
+      background: radial-gradient(circle at top, #1d1f3e 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
       min-height: 100vh;
-      color: #f8fafc;
+      padding: 2rem 1rem 4rem;
+      line-height: 1.6;
     }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
     }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, #f8c471, #f39c12, #d35400);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
+
+    /* Input Panel */
+    .input-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      margin-bottom: 2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.3fr 1fr auto;
+      gap: 1.2rem;
+      align-items: end;
+    }
+
+    @media (max-width: 820px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent);
+      margin-bottom: 0.45rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn-calc {
+      padding: 0.85rem 1.8rem;
+      background: linear-gradient(135deg, #f39c12, #d35400);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-calc:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(243, 156, 18, 0.4);
+    }
+
+    /* Results Layout */
+    #resultsArea {
+      display: none;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      color: var(--accent);
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Core 4 Metric Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .metric-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1.1;
+      margin: 0.35rem 0;
+    }
+
+    .metric-planet {
+      display: inline-block;
+      background: var(--bg-card-alt);
+      color: #f8c471;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .metric-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    /* Two-Column Grid for Lo Shu & Name */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 860px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    /* Lo Shu 3x3 Grid */
+    .loshu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 340px;
+      margin: 1rem auto;
+    }
+
     .loshu-cell {
       aspect-ratio: 1 / 1;
+      background: var(--bg-dark);
+      border: 2px solid var(--border);
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      border-radius: 0.75rem;
-      transition: all 0.25s ease;
+      justify-content: center;
+      padding: 0.5rem;
+      position: relative;
+      transition: all 0.25s;
     }
-    @media print {
-      body { background: #fff; color: #000; }
-      .no-print { display: none; }
+
+    .loshu-cell.present {
+      border-color: var(--accent);
+      background: linear-gradient(145deg, #22254a, #171932);
+      box-shadow: inset 0 0 15px var(--accent-glow);
+    }
+
+    .loshu-cell.missing {
+      opacity: 0.45;
+    }
+
+    .cell-base-num {
+      position: absolute;
+      top: 6px;
+      left: 9px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .cell-element {
+      position: absolute;
+      bottom: 5px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .cell-value {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    /* Planes Table */
+    .planes-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 520px) {
+      .planes-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .plane-item {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+    }
+
+    .plane-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #2a2d52;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f39c12, #2ecc71);
+      transition: width 0.4s ease;
+    }
+
+    /* Name Numerology Breakdown */
+    .letter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 1rem 0;
+    }
+
+    .letter-pill {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.35rem 0.65rem;
+      text-align: center;
+      min-width: 42px;
+    }
+
+    .letter-pill .char {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent);
+      display: block;
+    }
+
+    .letter-pill .val {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .name-systems-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .name-systems-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sys-box {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+
+    .sys-box h4 {
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+      font-size: 1rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.9rem;
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Lucky Table & Remedies */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    .info-table th,
+    .info-table td {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+
+    .info-table th {
+      color: var(--accent);
+      width: 32%;
+      font-weight: 600;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+
+    .tag {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.84rem;
+    }
+
+    .tag.missing-tag {
+      border-color: rgba(231, 76, 60, 0.5);
+      color: #f1948a;
     }
   </style>
 </head>
-<body class="py-8 px-4">
+<body>
 
-  <div class="max-w-5xl mx-auto">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-amber-400 tracking-wide mb-2">
-        Vedic Yoga, Lo Shu Grid & Name Analyzer
-      </h1>
-      <p class="text-slate-300 text-sm md:text-base">
-        Automatic 3x3 Lo Shu Grid, Yoni/Gana/Nadi Avakahada Chakra, Active Yogas & Chaldean Name Correction
-      </p>
-    </div>
+<div class="container">
+  <header>
+    <h1>✦ Vedic & Lo Shu Numerology Calculator ✦</h1>
+    <p>Mulank • Bhagyank • Gender Kua Number • Universal Year • Chaldean & Pythagorean Name Numerology</p>
+  </header>
 
-    <!-- Input Form -->
-    <div class="glass-card rounded-2xl p-6 md:p-8 shadow-2xl mb-8 no-print">
-      <form id="astroForm" class="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div>
-          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Full Name</label>
-          <input type="text" id="fullName" required placeholder="e.g., Rahul Sharma"
-            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+  <!-- Input Section -->
+  <div class="input-card">
+    <form id="numForm" onsubmit="event.preventDefault(); calculateAll();">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" class="form-control" placeholder="e.g., Aarav Sharma" required value="Aarav Sharma" />
         </div>
-
-        <div>
-          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Date of Birth</label>
-          <input type="date" id="dob" required
-            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+        <div class="form-group">
+          <label for="dob">Date of Birth</label>
+          <input type="date" id="dob" class="form-control" required value="1995-08-15" />
         </div>
-
-        <div>
-          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Time of Birth</label>
-          <input type="time" id="tob" value="12:00"
-            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
-        </div>
-
-        <div>
-          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Gender (For Kua No.)</label>
-          <select id="gender"
-            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+        <div class="form-group">
+          <label for="gender">Gender (for Kua)</label>
+          <select id="gender" class="form-control">
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
         </div>
-
-        <div class="md:col-span-4 text-center mt-2">
-          <button type="submit"
-            class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold py-3 px-8 rounded-xl shadow-lg transition transform hover:scale-105">
-            Generate Complete Chart & Name Suggestions
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Results Section -->
-    <div id="results" class="hidden space-y-8">
-
-      <!-- Core Numerology Pillars -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-amber-400">
-          <span class="text-xs uppercase tracking-wider text-slate-400">Mulank (Driver)</span>
-          <div id="mulankVal" class="text-3xl font-extrabold text-white my-1">-</div>
-          <div id="mulankPlanet" class="text-xs text-amber-300 font-medium">-</div>
-        </div>
-
-        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-purple-400">
-          <span class="text-xs uppercase tracking-wider text-slate-400">Bhagyank (Conductor)</span>
-          <div id="bhagyankVal" class="text-3xl font-extrabold text-white my-1">-</div>
-          <div id="bhagyankPlanet" class="text-xs text-purple-300 font-medium">-</div>
-        </div>
-
-        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-cyan-400">
-          <span class="text-xs uppercase tracking-wider text-slate-400">Kua Number (Angel)</span>
-          <div id="kuaVal" class="text-3xl font-extrabold text-white my-1">-</div>
-          <div id="kuaPlanet" class="text-xs text-cyan-300 font-medium">-</div>
-        </div>
-
-        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-emerald-400">
-          <span class="text-xs uppercase tracking-wider text-slate-400">Current Name No.</span>
-          <div id="nameNumVal" class="text-3xl font-extrabold text-white my-1">-</div>
-          <div id="nameStatus" class="text-xs font-medium">-</div>
-        </div>
+        <button type="submit" class="btn-calc">Calculate Report</button>
       </div>
-
-      <!-- Lo Shu Grid + Vedic Yoni / Avakahada Chakra Side-by-Side -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Automatic 3x3 Lo Shu Grid -->
-        <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-amber-400">Automatic Lo Shu Grid</h2>
-              <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded border border-slate-700">3x3 Vedic Square</span>
-            </div>
-            <p class="text-xs text-slate-400 mb-4">
-              Includes DOB digits, <span class="text-amber-300 font-semibold">Mulank (M)</span>, <span class="text-purple-300 font-semibold">Bhagyank (B)</span> & <span class="text-cyan-300 font-semibold">Kua (K)</span>.
-            </p>
-
-            <!-- 3x3 Grid Container -->
-            <div id="loshuGrid" class="grid grid-cols-3 gap-3 max-w-xs mx-auto mb-5"></div>
-          </div>
-
-          <!-- Missing Numbers Analysis -->
-          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5">
-            <div class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1">Missing Numbers & Impact</div>
-            <div id="missingNumbersText" class="text-xs text-slate-300 leading-relaxed">-</div>
-          </div>
-        </div>
-
-        <!-- Vedic Avakahada Chakra (Yoni, Gana, Nadi, Varna, Rashi, Nakshatra) -->
-        <div class="lg:col-span-7 glass-card rounded-2xl p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-amber-400">Vedic Avakahada Chakra (Yoni & All)</h2>
-            <span id="moonSignBadge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-semibold">Rashi: -</span>
-          </div>
-          <p class="text-xs text-slate-400 mb-5">
-            Calculated from your lunar position (Sidereal Lahiri Ayanamsa) based on Date and Time of Birth.
-          </p>
-
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5" id="avakahadaGrid">
-            <!-- Dynamically Populated -->
-          </div>
-
-          <!-- Yoni Deep Dive Box -->
-          <div class="mt-5 bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/30 rounded-xl p-4">
-            <div class="text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">Your Yoni Nature & Trait</div>
-            <p id="yoniDescText" class="text-sm text-slate-200 leading-relaxed">-</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Active Vedic & Lo Shu Planes / Yogas -->
-      <div class="glass-card rounded-2xl p-6 md:p-8">
-        <h2 class="text-xl font-bold text-amber-400 mb-2">Active Yogas & Complete Lo Shu Planes</h2>
-        <p class="text-xs text-slate-400 mb-5">Combinations formed by your planetary alignments and completed rows, columns, or diagonals in your Lo Shu Grid.</p>
-        <div id="yogasList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-
-      <!-- Name Update Suggestions -->
-      <div class="glass-card rounded-2xl p-6 md:p-8">
-        <h2 class="text-xl font-bold text-amber-400 mb-2">Chaldean Name Update Suggestions</h2>
-        <p id="nameAnalysisText" class="text-slate-300 text-sm mb-5"></p>
-        <div id="nameSuggestionsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-
-    </div>
+    </form>
   </div>
 
-  <script>
-    // 1. Chaldean Numerology Map
-    const chaldeanMap = {
-      A:1, I:1, J:1, Q:1, Y:1,
-      B:2, K:2, R:2,
-      C:3, G:3, L:3, S:3,
-      D:4, M:4, T:4,
-      E:5, H:5, N:5, X:5,
-      U:6, V:6, W:6,
-      O:7, Z:7,
-      F:8, P:8
-    };
+  <!-- Results Section -->
+  <div id="resultsArea">
 
-    const planetRulers = {
-      1: "Sun (Surya)",
-      2: "Moon (Chandra)",
-      3: "Jupiter (Guru)",
-      4: "Rahu (North Node)",
-      5: "Mercury (Budh)",
-      6: "Venus (Shukra)",
-      7: "Ketu (South Node)",
-      8: "Saturn (Shani)",
-      9: "Mars (Mangal)"
-    };
+    <!-- 1. Core Numbers -->
+    <h2 class="section-title">1. Core Birth & Universal Numbers</h2>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-badge">Mulank (Driver / Psychic)</div>
+        <div class="metric-number" id="mulankVal">-</div>
+        <div class="metric-planet" id="mulankPlanet">-</div>
+        <p class="metric-desc" id="mulankDesc">-</p>
+      </div>
 
-    // Standard Lo Shu Grid order (Top-left to bottom-right)
-    const loShuLayout = [
-      { num: 4, label: "Rahu • Wealth", color: "border-emerald-500/40" },
-      { num: 9, label: "Mars • Fame", color: "border-rose-500/40" },
-      { num: 2, label: "Moon • Marriage", color: "border-slate-400/40" },
-      { num: 3, label: "Jupiter • Health", color: "border-amber-500/40" },
-      { num: 5, label: "Mercury • Balance", color: "border-yellow-400/40" },
-      { num: 7, label: "Ketu • Children", color: "border-purple-400/40" },
-      { num: 8, label: "Saturn • Knowledge", color: "border-blue-500/40" },
-      { num: 1, label: "Sun • Career", color: "border-orange-500/40" },
-      { num: 6, label: "Venus • Friends", color: "border-pink-400/40" }
-    ];
+      <div class="metric-card">
+        <div class="metric-badge">Bhagyank (Conductor / Destiny)</div>
+        <div class="metric-number" id="bhagyankVal">-</div>
+        <div class="metric-planet" id="bhagyankPlanet">-</div>
+        <p class="metric-desc" id="bhagyankDesc">-</p>
+      </div>
 
-    const missingRemedyShort = {
-      1: "1 (Ego/Career)",
-      2: "2 (Sensitivity/Intuition)",
-      3: "3 (Planning/Wisdom)",
-      4: "4 (Discipline/Order)",
-      5: "5 (Stability/Communication)",
-      6: "6 (Luxury/Support)",
-      7: "7 (Spirituality/Trust)",
-      8: "8 (Financial Management)",
-      9: "9 (Ambition/Humanitarianism)"
-    };
+      <div class="metric-card">
+        <div class="metric-badge" id="kuaLabel">Kua Number (Angel Number)</div>
+        <div class="metric-number" id="kuaVal">-</div>
+        <div class="metric-planet" id="kuaGroup">-</div>
+        <p class="metric-desc" id="kuaDesc">-</p>
+      </div>
 
-    const friendlyNumbers = {
-      1: [1, 3, 5, 6],
-      2: [1, 2, 5],
-      3: [1, 3, 5, 9],
-      4: [1, 5, 6],
-      5: [1, 3, 5, 6],
-      6: [1, 5, 6, 9],
-      7: [1, 2, 5],
-      8: [5, 6],
-      9: [1, 3, 5, 6, 9]
-    };
+      <div class="metric-card">
+        <div class="metric-badge" id="personalYearLabel">Personal & Universal Year</div>
+        <div class="metric-number" id="personalYearVal">-</div>
+        <div class="metric-planet" id="universalYearBadge">-</div>
+        <p class="metric-desc" id="personalYearDesc">-</p>
+      </div>
+    </div>
 
-    // 2. Complete 27 Nakshatra Database with Yoni, Gana, Nadi, Symbol & Traits
-    const nakshatraData = [
-      { name: "Ashwini", ruler: "Ketu", yoni: "Ashwa (Horse)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Independent, energetic, pioneering spirit, and quick decision-maker with strong vitality." },
-      { name: "Bharani", ruler: "Venus", yoni: "Gaja (Elephant)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Strong-willed, royal bearing, capable of carrying big responsibilities, and deeply loyal." },
-      { name: "Krittika", ruler: "Sun", yoni: "Mesha (Sheep/Goat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Determined, sharp-minded, protective of loved ones, and direct in communication." },
-      { name: "Rohini", ruler: "Moon", yoni: "Sarpa (Serpent)", gana: "Manushya (Human)", nadi: "Antya (Kapha)", trait: "Charismatic, creative, perceptive, magnetic personality, and appreciates beauty and comfort." },
-      { name: "Mrigashira", ruler: "Mars", yoni: "Sarpa (Serpent)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Curious explorer, quick thinker, observant, and constantly seeking deeper truth and knowledge." },
-      { name: "Ardra", ruler: "Rahu", yoni: "Shwana (Dog)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Fiercely loyal, deeply analytical, resilient through storms, and protective of your inner circle." },
-      { name: "Punarvasu", ruler: "Jupiter", yoni: "Marjara (Cat)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Adaptable, optimistic, self-sufficient, and always lands on your feet after setbacks." },
-      { name: "Pushya", ruler: "Saturn", yoni: "Mesha (Sheep/Goat)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Nurturing, dharmic, patient builder, and highly respected for wisdom and steadiness." },
-      { name: "Ashlesha", ruler: "Mercury", yoni: "Marjara (Cat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Intuitive, strategic, psychologically sharp, and possesses strong mystic insight." },
-      { name: "Magha", ruler: "Ketu", yoni: "Mushaka (Rat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Resourceful, ancestral pride, natural leader, and clever at building wealth and influence." },
-      { name: "Purva Phalguni", ruler: "Venus", yoni: "Mushaka (Rat)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Warm, generous, artistic, socially magnetic, and enjoys the finer things in life." },
-      { name: "Uttara Phalguni", ruler: "Sun", yoni: "Gau (Cow/Bull)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Dependable, grounded, service-oriented, and thrives in long-term commitments and leadership." },
-      { name: "Hasta", ruler: "Moon", yoni: "Mahisha (Buffalo)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Skilled craftsman, industrious, calm under pressure, and possesses strong practical endurance." },
-      { name: "Chitra", ruler: "Mars", yoni: "Vyaghra (Tiger)", gana: "Rakshasa (Fiery)", nadi: "Madhya (Pitta)", trait: "Dynamic, courageous, charismatic, eye for perfection, and fearless in pursuing ambitions." },
-      { name: "Swati", ruler: "Rahu", yoni: "Mahisha (Buffalo)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Independent, diplomatic, business-savvy, and values personal freedom above all." },
-      { name: "Vishakha", ruler: "Jupiter", yoni: "Vyaghra (Tiger)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Single-minded focus on goals, persuasive speaker, and unstoppable once committed." },
-      { name: "Anuradha", ruler: "Saturn", yoni: "Mriga (Deer)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Gentle, cooperative, builds lifelong friendships, and succeeds in foreign or group ventures." },
-      { name: "Jyeshtha", ruler: "Mercury", yoni: "Mriga (Deer)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Protective elder energy, sharp intellect, alert, and excels in positions of authority." },
-      { name: "Mula", ruler: "Ketu", yoni: "Shwana (Dog)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Investigative, gets to the root of every matter, courageous, and spiritually transformative." },
-      { name: "Purva Ashadha", ruler: "Venus", yoni: "Vanara (Monkey)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Invincible spirit, persuasive, adaptable, witty, and inspiring to others." },
-      { name: "Uttara Ashadha", ruler: "Sun", yoni: "Nakula (Mongoose)", gana: "Manushya (Human)", nadi: "Antya (Kapha)", trait: "Righteous, fearless problem-solver, enduring success, and victorious over obstacles." },
-      { name: "Shravana", ruler: "Moon", yoni: "Vanara (Monkey)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Clever listener, learned, adaptable, and excels in counseling, media, or knowledge fields." },
-      { name: "Dhanishta", ruler: "Mars", yoni: "Simha (Lion)", gana: "Rakshasa (Fiery)", nadi: "Madhya (Pitta)", trait: "Royal courage, musical/rhythmic affinity, ambitious, and naturally commands respect." },
-      { name: "Shatabhisha", ruler: "Rahu", yoni: "Ashwa (Horse)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Healer, innovative thinker, values privacy, and excels in research or technology." },
-      { name: "Purva Bhadrapada", ruler: "Jupiter", yoni: "Simha (Lion)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Passionate, visionary, fearless, and capable of profound spiritual and material breakthroughs." },
-      { name: "Uttara Bhadrapada", ruler: "Saturn", yoni: "Gau (Cow/Bull)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Deep wisdom, compassionate, emotionally anchored, and brings stability to everyone around." },
-      { name: "Revati", ruler: "Mercury", yoni: "Gaja (Elephant)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Prosperous, empathetic, protective guide, and blessed with artistic and spiritual abundance." }
-    ];
+    <!-- 2. Lo Shu Grid & Planes of Expression -->
+    <h2 class="section-title">2. Lo Shu Magic Square & Planes of Expression</h2>
+    <div class="two-col">
+      <div class="panel">
+        <h3 style="text-align:center; font-size:1.05rem; color:var(--accent);">Populated Lo Shu Grid</h3>
+        <p style="text-align:center; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">
+          Includes Birth Date Digits + Mulank + Bhagyank + Kua Number
+        </p>
+        <div class="loshu-grid" id="loshuContainer"></div>
+      </div>
 
-    const rashiData = [
-      { name: "Mesha (Aries)", lord: "Mars (Mangal)", varna: "Kshatriya (Warrior)", vashya: "Chatushpada (Quadruped)" },
-      { name: "Vrishabha (Taurus)", lord: "Venus (Shukra)", varna: "Vaishya (Merchant)", vashya: "Chatushpada (Quadruped)" },
-      { name: "Mithuna (Gemini)", lord: "Mercury (Budh)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
-      { name: "Karka (Cancer)", lord: "Moon (Chandra)", varna: "Brahmin (Scholar)", vashya: "Jalachara (Water)" },
-      { name: "Simha (Leo)", lord: "Sun (Surya)", varna: "Kshatriya (Warrior)", vashya: "Vanachara (Wild)" },
-      { name: "Kanya (Virgo)", lord: "Mercury (Budh)", varna: "Vaishya (Merchant)", vashya: "Dwipada (Human)" },
-      { name: "Tula (Libra)", lord: "Venus (Shukra)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
-      { name: "Vrishchika (Scorpio)", lord: "Mars (Mangal)", varna: "Brahmin (Scholar)", vashya: "Keeta (Insect/Mystic)" },
-      { name: "Dhanu (Sagittarius)", lord: "Jupiter (Guru)", varna: "Kshatriya (Warrior)", vashya: "Dwipada (Human)" },
-      { name: "Makara (Capricorn)", lord: "Saturn (Shani)", varna: "Vaishya (Merchant)", vashya: "Jalachara (Water)" },
-      { name: "Kumbha (Aquarius)", lord: "Saturn (Shani)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
-      { name: "Meena (Pisces)", lord: "Jupiter (Guru)", varna: "Brahmin (Scholar)", vashya: "Jalachara (Water)" }
-    ];
+      <div class="panel">
+        <h3 style="font-size:1.05rem; color:var(--accent); margin-bottom:0.4rem;">6 Planes of Expression</h3>
+        <p style="font-size:0.84rem; color:var(--text-muted);">
+          Evaluates mental, emotional, practical, and willpower strengths across horizontal and vertical Lo Shu axes.
+        </p>
+        <div class="planes-list" id="planesContainer"></div>
 
-    function reduceToSingle(num) {
-      while (num > 9) {
-        num = String(num).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
-      }
-      return num;
+        <h4 style="font-size:0.95rem; color:var(--accent); margin-top:1.3rem;">Missing Numbers in Grid</h4>
+        <div class="tag-list" id="missingNumbersList"></div>
+      </div>
+    </div>
+
+    <!-- 3. Name Numerology -->
+    <h2 class="section-title">3. Name Numerology (Chaldean & Pythagorean)</h2>
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <h3 style="font-size:1.05rem; color:var(--accent);">Letter-by-Letter Chaldean Vibration Breakdown</h3>
+        <span style="font-size:0.82rem; color:var(--text-muted);">Top: Letter | Bottom: Chaldean Value</span>
+      </div>
+      <div class="letter-pills" id="letterBreakdown"></div>
+
+      <div class="name-systems-grid">
+        <div class="sys-box">
+          <h4>Chaldean System (Vedic / Ancient)</h4>
+          <div class="stat-row">
+            <span>Compound Name Number:</span>
+            <strong id="chaldeanCompound">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Single Name Number (Destiny):</span>
+            <strong id="chaldeanSingle" style="color:var(--accent);">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Soul Urge (Vowels Only):</span>
+            <strong id="chaldeanVowels">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Outer Personality (Consonants):</span>
+            <strong id="chaldeanConsonants">-</strong>
+          </div>
+        </div>
+
+        <div class="sys-box">
+          <h4>Pythagorean System (Western)</h4>
+          <div class="stat-row">
+            <span>Compound Expression Number:</span>
+            <strong id="pythCompound">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Expression / Destiny Number:</span>
+            <strong id="pythSingle" style="color:var(--accent);">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Heart's Desire (Vowels Only):</span>
+            <strong id="pythVowels">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Personality (Consonants):</span>
+            <strong id="pythConsonants">-</strong>
+          </div>
+        </div>
+      </div>
+      <p id="nameCompatibilityNote" style="margin-top:1rem; font-size:0.9rem; color:var(--text-muted); background:var(--bg-dark); padding:0.85rem 1rem; border-radius:8px; border-left:4px solid var(--accent);"></p>
+    </div>
+
+    <!-- 4. Lucky Attributes & Remedies -->
+    <h2 class="section-title">4. Planetary Compatibility & Missing Number Remedies</h2>
+    <div class="two-col">
+      <div class="panel">
+        <h3 style="font-size:1.05rem; color:var(--accent); margin-bottom:0.5rem;">Lucky Guide (Based on Mulank & Bhagyank)</h3>
+        <table class="info-table">
+          <tr>
+            <th>Ruling Planet (Mulank)</th>
+            <td id="tblPlanet">-</td>
+          </tr>
+          <tr>
+            <th>Friendly / Lucky Numbers</th>
+            <td id="tblFriendly">-</td>
+          </tr>
+          <tr>
+            <th>Neutral Numbers</th>
+            <td id="tblNeutral">-</td>
+          </tr>
+          <tr>
+            <th>Numbers to Avoid (Enemy)</th>
+            <td id="tblEnemy">-</td>
+          </tr>
+          <tr>
+            <th>Auspicious Colors</th>
+            <td id="tblColors">-</td>
+          </tr>
+          <tr>
+            <th>Lucky Days</th>
+            <td id="tblDays">-</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3 style="font-size:1.05rem; color:var(--accent); margin-bottom:0.5rem;">Missing Number Elements & Remedies</h3>
+        <div id="remediesContainer" style="font-size:0.88rem; color:var(--text-muted); display:flex; flex-direction:column; gap:0.65rem;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Planetary & Number Database (1 to 9)
+  const NUMBER_DATA = {
+    1: {
+      planet: "Sun (Surya)",
+      traits: "Natural leader, independent, ambitious, authoritative, and pioneering.",
+      friendly: [1, 2, 3, 5, 9],
+      neutral: [4, 7],
+      enemy: [6, 8],
+      colors: "Gold, Orange, Yellow, Copper",
+      days: "Sunday, Monday",
+      element: "Water (Career & Communication)",
+      remedy: "Keep a small water fountain or blue crystal in the North; offer water to the rising Sun."
+    },
+    2: {
+      planet: "Moon (Chandra)",
+      traits: "Intuitive, diplomatic, sensitive, peacemaker, creative, and empathetic.",
+      friendly: [1, 2, 3, 5],
+      neutral: [6, 8, 9],
+      enemy: [4, 7],
+      colors: "White, Pearl, Light Green, Cream",
+      days: "Monday, Friday",
+      element: "Earth (Relationships & Marriage)",
+      remedy: "Place a pair of rose quartz crystals in the South-West; respect motherly figures and avoid silver wastage."
+    },
+    3: {
+      planet: "Jupiter (Guru)",
+      traits: "Wise, expressive, optimistic, disciplined, counselor, and knowledge-seeker.",
+      friendly: [1, 2, 3, 5, 9],
+      neutral: [4, 7, 8],
+      enemy: [6],
+      colors: "Yellow, Saffron, Light Purple",
+      days: "Thursday, Tuesday",
+      element: "Hard Wood (Health & Family)",
+      remedy: "Wear a Tulsi or Rudraksha bracelet, or keep green indoor plants in the East sector."
+    },
+    4: {
+      planet: "Rahu (Uranus)",
+      traits: "Practical, disciplined, unconventional, detail-oriented, builder, and reformist.",
+      friendly: [1, 5, 6, 7, 8],
+      neutral: [3, 4],
+      enemy: [2, 9],
+      colors: "Electric Blue, Grey, Khaki",
+      days: "Saturday, Sunday",
+      element: "Soft Wood (Wealth & Prosperity)",
+      remedy: "Keep an energizing green plant or wooden wind chime in the South-East; maintain strict daily organization."
+    },
+    5: {
+      planet: "Mercury (Budh)",
+      traits: "Versatile, communicative, business-minded, adaptable, quick-witted, and freedom-loving.",
+      friendly: [1, 2, 3, 5, 6],
+      neutral: [4, 7, 8, 9],
+      enemy: [],
+      colors: "Emerald Green, White, Light Grey",
+      days: "Wednesday, Friday",
+      element: "Earth (Center Balance & Stability)",
+      remedy: "Keep the center of your home clutter-free; wear a yellow citrine or green jade crystal."
+    },
+    6: {
+      planet: "Venus (Shukra)",
+      traits: "Charismatic, artistic, family-oriented, luxury-loving, nurturing, and responsible.",
+      friendly: [4, 5, 6, 7, 8],
+      neutral: [2, 3, 9],
+      enemy: [1],
+      colors: "White, Sky Blue, Pink, Pastel shades",
+      days: "Friday, Wednesday",
+      element: "Metal (Helpful People & Travel)",
+      remedy: "Wear a metallic watch (gold/silver tone) or hang a 6-rod metal wind chime in the North-West."
+    },
+    7: {
+      planet: "Ketu (Neptune)",
+      traits: "Analytical, spiritual, researcher, philosophical, introspective, and mystical.",
+      friendly: [1, 4, 5, 6, 8],
+      neutral: [3, 7, 9],
+      enemy: [2],
+      colors: "Smoky Grey, Off-White, Light Yellow",
+      days: "Sunday, Monday",
+      element: "Metal (Creativity & Children)",
+      remedy: "Wear a silver or metallic wristwatch; care for stray dogs and practice daily meditation."
+    },
+    8: {
+      planet: "Saturn (Shani)",
+      traits: "Karmic, persevering, just, financially astute, hardworking, and resilient.",
+      friendly: [4, 5, 6, 7, 8],
+      neutral: [3],
+      enemy: [1, 2, 9],
+      colors: "Dark Blue, Black, Purple",
+      days: "Saturday, Friday",
+      element: "Earth (Knowledge & Wisdom)",
+      remedy: "Keep natural quartz crystals in the North-East; practice charity and fairness toward workers."
+    },
+    9: {
+      planet: "Mars (Mangal)",
+      traits: "Courageous, humanitarian, energetic, determined, passionate, and protective.",
+      friendly: [1, 2, 3, 5, 9],
+      neutral: [6, 7],
+      enemy: [4, 8],
+      colors: "Red, Crimson, Coral, Pink",
+      days: "Tuesday, Thursday",
+      element: "Fire (Fame & Recognition)",
+      remedy: "Keep red decor or a salt lamp in the South sector; exercise regularly to channel Mars energy."
+    }
+  };
+
+  // Chaldean Letter Mapping (No 9 assigned to letters)
+  const CHALDEAN_MAP = {
+    A:1, I:1, J:1, Q:1, Y:1,
+    B:2, K:2, R:2,
+    C:3, G:3, L:3, S:3,
+    D:4, M:4, T:4,
+    E:5, H:5, N:5, X:5,
+    U:6, V:6, W:6,
+    O:7, Z:7,
+    F:8, P:8
+  };
+
+  // Pythagorean Letter Mapping (1-9 sequential)
+  const PYTHAGOREAN_MAP = {
+    A:1, J:1, S:1,
+    B:2, K:2, T:2,
+    C:3, L:3, U:3,
+    D:4, M:4, V:4,
+    E:5, N:5, W:5,
+    F:6, O:6, X:6,
+    G:7, P:7, Y:7,
+    H:8, Q:8, Z:8,
+    I:9, R:9
+  };
+
+  const VOWELS = new Set(['A', 'E', 'I', 'O', 'U']);
+
+  // Standard Lo Shu layout order (Top-to-bottom, Left-to-right)
+  const LOSHU_LAYOUT = [
+    { num: 4, label: "SE • Wood" },
+    { num: 9, label: "S • Fire" },
+    { num: 2, label: "SW • Earth" },
+    { num: 3, label: "E • Wood" },
+    { num: 5, label: "Center • Earth" },
+    { num: 7, label: "W • Metal" },
+    { num: 8, label: "NE • Earth" },
+    { num: 1, label: "N • Water" },
+    { num: 6, label: "NW • Metal" }
+  ];
+
+  // 6 Planes of Expression
+  const PLANES = [
+    { name: "Mental Plane (4-9-2)", nums: [4, 9, 2], desc: "Memory, intellect & analytical thinking" },
+    { name: "Emotional Plane (3-5-7)", nums: [3, 5, 7], desc: "Heart, intuition, spirituality & feelings" },
+    { name: "Practical Plane (8-1-6)", nums: [8, 1, 6], desc: "Material success, groundedness & execution" },
+    { name: "Thought Plane (4-3-8)", nums: [4, 3, 8], desc: "Planning, vision & strong ideation" },
+    { name: "Will Plane (9-5-1)", nums: [9, 5, 1], desc: "Determination, persistence & backbone" },
+    { name: "Action Plane (2-7-6)", nums: [2, 7, 6], desc: "Turning ideas into physical reality" }
+  ];
+
+  // Helper: Reduce any integer to single digit (1-9)
+  function reduceToSingle(num) {
+    let n = Math.abs(parseInt(num, 10)) || 0;
+    while (n > 9) {
+      n = String(n).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+    }
+    return n;
+  }
+
+  function calculateAll() {
+    const rawName = document.getElementById('fullName').value.trim();
+    const dobStr = document.getElementById('dob').value;
+    const gender = document.getElementById('gender').value;
+
+    if (!rawName || !dobStr) return;
+
+    const [yearStr, monthStr, dayStr] = dobStr.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const day = parseInt(dayStr, 10);
+
+    // 1. Mulank (Driver / Psychic Number)
+    const mulank = reduceToSingle(day);
+
+    // 2. Bhagyank (Conductor / Destiny Number)
+    const allDobDigits = (yearStr + monthStr + dayStr).split('').map(Number);
+    const dobSum = allDobDigits.reduce((a, b) => a + b, 0);
+    const bhagyank = reduceToSingle(dobSum);
+
+    // 3. Gender-based Kua Number
+    const yearReduced = reduceToSingle(year);
+    let kua = 0;
+    if (gender === 'male') {
+      kua = 11 - yearReduced;
+      kua = reduceToSingle(kua);
+    } else {
+      kua = yearReduced + 4;
+      kua = reduceToSingle(kua);
     }
 
-    function calcKuaNumber(yearStr, gender) {
-      const yearSum = reduceToSingle(yearStr.split('').reduce((a, b) => a + parseInt(b, 10), 0));
-      if (gender === 'male') {
-        let k = 11 - yearSum;
-        return reduceToSingle(k);
+ // 4. Universal & Personal Year Number
+    const currentYear = new Date().getFullYear();
+    const universalYear = reduceToSingle(currentYear);
+    const personalYear = reduceToSingle(day + month + currentYear);
+
+    // Update Core Metric Cards
+    document.getElementById('mulankVal').textContent = mulank;
+    document.getElementById('mulankPlanet').textContent = NUMBER_DATA[mulank].planet;
+    document.getElementById('mulankDesc').textContent = NUMBER_DATA[mulank].traits;
+
+    document.getElementById('bhagyankVal').textContent = bhagyank;
+    document.getElementById('bhagyankPlanet').textContent = NUMBER_DATA[bhagyank].planet;
+    document.getElementById('bhagyankDesc').textContent = NUMBER_DATA[bhagyank].traits;
+
+    const eastGroup = [1, 3, 4, 9];
+    const isEast = eastGroup.includes(kua);
+    document.getElementById('kuaLabel').textContent = `Kua Number (${gender === 'male' ? 'Male' : 'Female'})`;
+    document.getElementById('kuaVal').textContent = kua;
+    document.getElementById('kuaGroup').textContent = isEast ? "East Group" : "West Group";
+    document.getElementById('kuaDesc').textContent = isEast
+      ? "Auspicious Directions: South, North, South-East, and East."
+      : "Auspicious Directions: West, North-West, South-West, and North-East.";
+
+    document.getElementById('personalYearLabel').textContent = `Personal Year (${currentYear})`;
+    document.getElementById('personalYearVal').textContent = personalYear;
+    document.getElementById('universalYearBadge').textContent = `Universal Year ${currentYear}: #${universalYear}`;
+    document.getElementById('personalYearDesc').textContent =
+      `Your ${currentYear} cycle vibrates with ${NUMBER_DATA[personalYear].planet} energy: ${NUMBER_DATA[personalYear].traits.toLowerCase()}`;
+
+    // 5. Build Lo Shu Grid Counts
+    const counts = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 };
+    allDobDigits.forEach(d => {
+      if (d >= 1 && d <= 9) counts[d]++;
+    });
+
+    // Add Mulank (if birthday > 9 so it's not duplicated from single-digit day)
+    if (day > 9) counts[mulank]++;
+    // Always add Bhagyank and Kua
+    counts[bhagyank]++;
+    counts[kua]++;
+
+    const loshuContainer = document.getElementById('loshuContainer');
+    loshuContainer.innerHTML = '';
+
+    LOSHU_LAYOUT.forEach(cell => {
+      const c = counts[cell.num];
+      const div = document.createElement('div');
+      div.className = `loshu-cell ${c > 0 ? 'present' : 'missing'}`;
+      div.innerHTML = `
+        <span class="cell-base-num">#${cell.num}</span>
+        <div class="cell-value">${c > 0 ? String(cell.num).repeat(c) : '—'}</div>
+        <span class="cell-element">${cell.label}</span>
+      `;
+      loshuContainer.appendChild(div);
+    });
+
+    // Render 6 Planes of Expression
+    const planesContainer = document.getElementById('planesContainer');
+    planesContainer.innerHTML = '';
+    PLANES.forEach(plane => {
+      const presentCount = plane.nums.filter(n => counts[n] > 0).length;
+      const pct = Math.round((presentCount / 3) * 100);
+      const item = document.createElement('div');
+      item.className = 'plane-item';
+      item.innerHTML = `
+        <div class="plane-header">
+          <span>${plane.name}</span>
+          <span style="color:var(--accent);">${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;"></div>
+        </div>
+        <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.35rem;">${plane.desc}</div>
+      `;
+      planesContainer.appendChild(item);
+    });
+
+    // Render Missing Numbers & Remedies
+    const missingList = document.getElementById('missingNumbersList');
+    const remediesContainer = document.getElementById('remediesContainer');
+    missingList.innerHTML = '';
+    remediesContainer.innerHTML = '';
+
+    const missingNums = Object.keys(counts).map(Number).filter(n => counts[n] === 0);
+    if (missingNums.length === 0) {
+      missingList.innerHTML = `<span class="tag" style="color:var(--success);">All 9 numbers present! Rare complete chart.</span>`;
+      remediesContainer.innerHTML = `<p>Your Lo Shu Grid has every number present—no missing element remedies required.</p>`;
+    } else {
+      missingNums.forEach(n => {
+        const tag = document.createElement('span');
+        tag.className = 'tag missing-tag';
+        tag.textContent = `Missing #${n} (${NUMBER_DATA[n].planet.split(' ')[0]})`;
+        missingList.appendChild(tag);
+
+        const rem = document.createElement('div');
+        rem.style.padding = '0.6rem 0.8rem';
+        rem.style.background = 'var(--bg-dark)';
+        rem.style.borderRadius = '8px';
+        rem.style.borderLeft = '3px solid var(--danger)';
+        rem.innerHTML = `<strong style="color:var(--text-main);">Number ${n} (${NUMBER_DATA[n].element}):</strong> ${NUMBER_DATA[n].remedy}`;
+        remediesContainer.appendChild(rem);
+      });
+    }
+
+    // 6. Name Numerology (Chaldean & Pythagorean)
+    const cleanChars = rawName.toUpperCase().replace(/[^A-Z]/g, '').split('');
+    const letterBreakdown = document.getElementById('letterBreakdown');
+    letterBreakdown.innerHTML = '';
+
+    let chalCompound = 0, chalVowels = 0, chalCons = 0;
+    let pythCompound = 0, pythVowels = 0, pythCons = 0;
+
+    cleanChars.forEach(ch => {
+      const cVal = CHALDEAN_MAP[ch] || 0;
+      const pVal = PYTHAGOREAN_MAP[ch] || 0;
+      chalCompound += cVal;
+      pythCompound += pVal;
+
+      if (VOWELS.has(ch)) {
+        chalVowels += cVal;
+        pythVowels += pVal;
       } else {
-        let k = yearSum + 4;
-        return reduceToSingle(k);
+        chalCons += cVal;
+        pythCons += pVal;
       }
+
+      const pill = document.createElement('div');
+      pill.className = 'letter-pill';
+      pill.innerHTML = `<span class="char">${ch}</span><span class="val">${cVal}</span>`;
+      letterBreakdown.appendChild(pill);
+    });
+
+    const chalSingle = reduceToSingle(chalCompound);
+    const pythSingle = reduceToSingle(pythCompound);
+
+    document.getElementById('chaldeanCompound').textContent = chalCompound;
+    document.getElementById('chaldeanSingle').textContent = `${chalSingle} (${NUMBER_DATA[chalSingle]?.planet || ''})`;
+    document.getElementById('chaldeanVowels').textContent = `${chalVowels} → ${reduceToSingle(chalVowels)}`;
+    document.getElementById('chaldeanConsonants').textContent = `${chalCons} → ${reduceToSingle(chalCons)}`;
+
+    document.getElementById('pythCompound').textContent = pythCompound;
+    document.getElementById('pythSingle').textContent = `${pythSingle} (${NUMBER_DATA[pythSingle]?.planet || ''})`;
+    document.getElementById('pythVowels').textContent = `${pythVowels} → ${reduceToSingle(pythVowels)}`;
+    document.getElementById('pythConsonants').textContent = `${pythCons} → ${reduceToSingle(pythCons)}`;
+
+    // Name vs Birth Number Harmony Check
+    const isFriendlyToMulank = NUMBER_DATA[mulank].friendly.includes(chalSingle);
+    const isFriendlyToBhagyank = NUMBER_DATA[bhagyank].friendly.includes(chalSingle);
+    const noteEl = document.getElementById('nameCompatibilityNote');
+
+    if (isFriendlyToMulank && isFriendlyToBhagyank) {
+      noteEl.innerHTML = `<strong style="color:var(--success);">✔ Strong Name Alignment:</strong> Your Chaldean Name Number (<strong>${chalSingle}</strong>) is harmonically friendly with both your Mulank (<strong>${mulank}</strong>) and Bhagyank (<strong>${bhagyank}</strong>).`;
+    } else if (isFriendlyToMulank || isFriendlyToBhagyank) {
+      noteEl.innerHTML = `<strong style="color:var(--accent);">◐ Moderate Name Alignment:</strong> Your Chaldean Name Number (<strong>${chalSingle}</strong>) supports one of your core birth numbers (Mulank <strong>${mulank}</strong> / Bhagyank <strong>${bhagyank}</strong>). For maximum synergy, tuning name spelling to <strong>${NUMBER_DATA[mulank].friendly.filter(n => NUMBER_DATA[bhagyank].friendly.includes(n)).join(', ')}</strong> is ideal.`;
+    } else {
+      const commonFriends = NUMBER_DATA[mulank].friendly.filter(n => NUMBER_DATA[bhagyank].friendly.includes(n));
+      noteEl.innerHTML = `<strong style="color:#f1948a;">⚠ Vibration Mismatch:</strong> Your Chaldean Name Number (<strong>${chalSingle}</strong>) is neutral/challenging toward Mulank (<strong>${mulank}</strong>) and Bhagyank (<strong>${bhagyank}</strong>). Consider adjusting your name vibration to <strong>${commonFriends.join(' or ') || NUMBER_DATA[mulank].friendly[0]}</strong>.`;
     }
 
-    // Astronomical Sidereal Moon Longitude approximation (Lahiri Ayanamsa)
-    function calculateVedicMoonDetails(dobStr, tobStr) {
-      const [y, m, d] = dobStr.split('-').map(Number);
-      const [hr, min] = (tobStr || "12:00").split(':').map(Number);
-      // Assume IST (+5:30) offset as standard baseline for Vedic calculations
-      const utcDate = Date.UTC(y, m - 1, d, hr, min) - (5.5 * 3600 * 1000);
-      const jd = (utcDate / 86400000) + 2440587.5;
-      const d2000 = jd - 2451545.0;
+    // 7. Populate Compatibility Table
+    const mInfo = NUMBER_DATA[mulank];
+    document.getElementById('tblPlanet').textContent = mInfo.planet;
+    document.getElementById('tblFriendly').textContent = mInfo.friendly.join(', ');
+    document.getElementById('tblNeutral').textContent = mInfo.neutral.join(', ') || 'None';
+    document.getElementById('tblEnemy').textContent = mInfo.enemy.length ? mInfo.enemy.join(', ') : 'None (Universal Friend)';
+    document.getElementById('tblColors').textContent = mInfo.colors;
+    document.getElementById('tblDays').textContent = mInfo.days;
 
-      const deg2rad = Math.PI / 180;
-      const norm = (deg) => ((deg % 360) + 360) % 360;
+    document.getElementById('resultsArea').style.display = 'block';
+  }
 
-      // Mean elements of Moon
-      const L = norm(218.31617 + 13.17639648 * d2000);
-      const M_moon = norm(134.96292 + 13.06499295 * d2000);
-      const M_sun = norm(357.52772 + 0.98560028 * d2000);
-      const D = norm(297.85027 + 12.19074912 * d2000);
-      const F = norm(93.27209 + 13.22935024 * d2000);
+  // Run initial calculation on load
+  window.addEventListener('DOMContentLoaded', calculateAll);
+</script>
 
-      // Major periodic perturbations
-      let tropLon = L
-        + 6.28875 * Math.sin(M_moon * deg2rad)
-        + 1.27402 * Math.sin((2 * D - M_moon) * deg2rad)
-        + 0.65831 * Math.sin(2 * D * deg2rad)
-        + 0.21362 * Math.sin(2 * M_moon * deg2rad)
-        - 0.18559 * Math.sin(M_sun * deg2rad)
-        - 0.11433 * Math.sin(2 * F * deg2rad);
-
-      // Lahiri Ayanamsa (~23.85 deg at J2000 + precession)
-      const ayanamsa = 23.853 + (d2000 / 365.25) * 0.01397;
-      const siderealLon = norm(tropLon - ayanamsa);
-
-      const nakshatraSpan = 360 / 27; // 13.3333 deg
-      const nakIndex = Math.floor(siderealLon / nakshatraSpan) % 27;
-      const pada = Math.floor((siderealLon % nakshatraSpan) / (nakshatraSpan / 4)) + 1;
-      const rashiIndex = Math.floor(siderealLon
+</body>
+</html>
