@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vedic Astrology, Lo Shu Grid & Name Correction App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1e1b4b, #090d16);
+      min-height: 100vh;
+      color: #f8fafc;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .loshu-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 0.75rem;
+      transition: all 0.25s ease;
+    }
+    @media print {
+      body { background: #fff; color: #000; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body class="py-8 px-4">
+
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold text-amber-400 tracking-wide mb-2">
+        Vedic Yoga, Lo Shu Grid & Name Analyzer
+      </h1>
+      <p class="text-slate-300 text-sm md:text-base">
+        Automatic 3x3 Lo Shu Grid, Yoni/Gana/Nadi Avakahada Chakra, Active Yogas & Chaldean Name Correction
+      </p>
+    </div>
+
+    <!-- Input Form -->
+    <div class="glass-card rounded-2xl p-6 md:p-8 shadow-2xl mb-8 no-print">
+      <form id="astroForm" class="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Full Name</label>
+          <input type="text" id="fullName" required placeholder="e.g., Rahul Sharma"
+            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Date of Birth</label>
+          <input type="date" id="dob" required
+            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Time of Birth</label>
+          <input type="time" id="tob" value="12:00"
+            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold text-amber-300 mb-2">Gender (For Kua No.)</label>
+          <select id="gender"
+            class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-4 text-center mt-2">
+          <button type="submit"
+            class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold py-3 px-8 rounded-xl shadow-lg transition transform hover:scale-105">
+            Generate Complete Chart & Name Suggestions
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="hidden space-y-8">
+
+      <!-- Core Numerology Pillars -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-amber-400">
+          <span class="text-xs uppercase tracking-wider text-slate-400">Mulank (Driver)</span>
+          <div id="mulankVal" class="text-3xl font-extrabold text-white my-1">-</div>
+          <div id="mulankPlanet" class="text-xs text-amber-300 font-medium">-</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-purple-400">
+          <span class="text-xs uppercase tracking-wider text-slate-400">Bhagyank (Conductor)</span>
+          <div id="bhagyankVal" class="text-3xl font-extrabold text-white my-1">-</div>
+          <div id="bhagyankPlanet" class="text-xs text-purple-300 font-medium">-</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-cyan-400">
+          <span class="text-xs uppercase tracking-wider text-slate-400">Kua Number (Angel)</span>
+          <div id="kuaVal" class="text-3xl font-extrabold text-white my-1">-</div>
+          <div id="kuaPlanet" class="text-xs text-cyan-300 font-medium">-</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl text-center border-t-4 border-emerald-400">
+          <span class="text-xs uppercase tracking-wider text-slate-400">Current Name No.</span>
+          <div id="nameNumVal" class="text-3xl font-extrabold text-white my-1">-</div>
+          <div id="nameStatus" class="text-xs font-medium">-</div>
+        </div>
+      </div>
+
+      <!-- Lo Shu Grid + Vedic Yoni / Avakahada Chakra Side-by-Side -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Automatic 3x3 Lo Shu Grid -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-amber-400">Automatic Lo Shu Grid</h2>
+              <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded border border-slate-700">3x3 Vedic Square</span>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">
+              Includes DOB digits, <span class="text-amber-300 font-semibold">Mulank (M)</span>, <span class="text-purple-300 font-semibold">Bhagyank (B)</span> & <span class="text-cyan-300 font-semibold">Kua (K)</span>.
+            </p>
+
+            <!-- 3x3 Grid Container -->
+            <div id="loshuGrid" class="grid grid-cols-3 gap-3 max-w-xs mx-auto mb-5"></div>
+          </div>
+
+          <!-- Missing Numbers Analysis -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5">
+            <div class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1">Missing Numbers & Impact</div>
+            <div id="missingNumbersText" class="text-xs text-slate-300 leading-relaxed">-</div>
+          </div>
+        </div>
+
+        <!-- Vedic Avakahada Chakra (Yoni, Gana, Nadi, Varna, Rashi, Nakshatra) -->
+        <div class="lg:col-span-7 glass-card rounded-2xl p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-amber-400">Vedic Avakahada Chakra (Yoni & All)</h2>
+            <span id="moonSignBadge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-semibold">Rashi: -</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-5">
+            Calculated from your lunar position (Sidereal Lahiri Ayanamsa) based on Date and Time of Birth.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5" id="avakahadaGrid">
+            <!-- Dynamically Populated -->
+          </div>
+
+          <!-- Yoni Deep Dive Box -->
+          <div class="mt-5 bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/30 rounded-xl p-4">
+            <div class="text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">Your Yoni Nature & Trait</div>
+            <p id="yoniDescText" class="text-sm text-slate-200 leading-relaxed">-</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Active Vedic & Lo Shu Planes / Yogas -->
+      <div class="glass-card rounded-2xl p-6 md:p-8">
+        <h2 class="text-xl font-bold text-amber-400 mb-2">Active Yogas & Complete Lo Shu Planes</h2>
+        <p class="text-xs text-slate-400 mb-5">Combinations formed by your planetary alignments and completed rows, columns, or diagonals in your Lo Shu Grid.</p>
+        <div id="yogasList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Name Update Suggestions -->
+      <div class="glass-card rounded-2xl p-6 md:p-8">
+        <h2 class="text-xl font-bold text-amber-400 mb-2">Chaldean Name Update Suggestions</h2>
+        <p id="nameAnalysisText" class="text-slate-300 text-sm mb-5"></p>
+        <div id="nameSuggestionsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 1. Chaldean Numerology Map
+    const chaldeanMap = {
+      A:1, I:1, J:1, Q:1, Y:1,
+      B:2, K:2, R:2,
+      C:3, G:3, L:3, S:3,
+      D:4, M:4, T:4,
+      E:5, H:5, N:5, X:5,
+      U:6, V:6, W:6,
+      O:7, Z:7,
+      F:8, P:8
+    };
+
+    const planetRulers = {
+      1: "Sun (Surya)",
+      2: "Moon (Chandra)",
+      3: "Jupiter (Guru)",
+      4: "Rahu (North Node)",
+      5: "Mercury (Budh)",
+      6: "Venus (Shukra)",
+      7: "Ketu (South Node)",
+      8: "Saturn (Shani)",
+      9: "Mars (Mangal)"
+    };
+
+    // Standard Lo Shu Grid order (Top-left to bottom-right)
+    const loShuLayout = [
+      { num: 4, label: "Rahu • Wealth", color: "border-emerald-500/40" },
+      { num: 9, label: "Mars • Fame", color: "border-rose-500/40" },
+      { num: 2, label: "Moon • Marriage", color: "border-slate-400/40" },
+      { num: 3, label: "Jupiter • Health", color: "border-amber-500/40" },
+      { num: 5, label: "Mercury • Balance", color: "border-yellow-400/40" },
+      { num: 7, label: "Ketu • Children", color: "border-purple-400/40" },
+      { num: 8, label: "Saturn • Knowledge", color: "border-blue-500/40" },
+      { num: 1, label: "Sun • Career", color: "border-orange-500/40" },
+      { num: 6, label: "Venus • Friends", color: "border-pink-400/40" }
+    ];
+
+    const missingRemedyShort = {
+      1: "1 (Ego/Career)",
+      2: "2 (Sensitivity/Intuition)",
+      3: "3 (Planning/Wisdom)",
+      4: "4 (Discipline/Order)",
+      5: "5 (Stability/Communication)",
+      6: "6 (Luxury/Support)",
+      7: "7 (Spirituality/Trust)",
+      8: "8 (Financial Management)",
+      9: "9 (Ambition/Humanitarianism)"
+    };
+
+    const friendlyNumbers = {
+      1: [1, 3, 5, 6],
+      2: [1, 2, 5],
+      3: [1, 3, 5, 9],
+      4: [1, 5, 6],
+      5: [1, 3, 5, 6],
+      6: [1, 5, 6, 9],
+      7: [1, 2, 5],
+      8: [5, 6],
+      9: [1, 3, 5, 6, 9]
+    };
+
+    // 2. Complete 27 Nakshatra Database with Yoni, Gana, Nadi, Symbol & Traits
+    const nakshatraData = [
+      { name: "Ashwini", ruler: "Ketu", yoni: "Ashwa (Horse)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Independent, energetic, pioneering spirit, and quick decision-maker with strong vitality." },
+      { name: "Bharani", ruler: "Venus", yoni: "Gaja (Elephant)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Strong-willed, royal bearing, capable of carrying big responsibilities, and deeply loyal." },
+      { name: "Krittika", ruler: "Sun", yoni: "Mesha (Sheep/Goat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Determined, sharp-minded, protective of loved ones, and direct in communication." },
+      { name: "Rohini", ruler: "Moon", yoni: "Sarpa (Serpent)", gana: "Manushya (Human)", nadi: "Antya (Kapha)", trait: "Charismatic, creative, perceptive, magnetic personality, and appreciates beauty and comfort." },
+      { name: "Mrigashira", ruler: "Mars", yoni: "Sarpa (Serpent)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Curious explorer, quick thinker, observant, and constantly seeking deeper truth and knowledge." },
+      { name: "Ardra", ruler: "Rahu", yoni: "Shwana (Dog)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Fiercely loyal, deeply analytical, resilient through storms, and protective of your inner circle." },
+      { name: "Punarvasu", ruler: "Jupiter", yoni: "Marjara (Cat)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Adaptable, optimistic, self-sufficient, and always lands on your feet after setbacks." },
+      { name: "Pushya", ruler: "Saturn", yoni: "Mesha (Sheep/Goat)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Nurturing, dharmic, patient builder, and highly respected for wisdom and steadiness." },
+      { name: "Ashlesha", ruler: "Mercury", yoni: "Marjara (Cat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Intuitive, strategic, psychologically sharp, and possesses strong mystic insight." },
+      { name: "Magha", ruler: "Ketu", yoni: "Mushaka (Rat)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Resourceful, ancestral pride, natural leader, and clever at building wealth and influence." },
+      { name: "Purva Phalguni", ruler: "Venus", yoni: "Mushaka (Rat)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Warm, generous, artistic, socially magnetic, and enjoys the finer things in life." },
+      { name: "Uttara Phalguni", ruler: "Sun", yoni: "Gau (Cow/Bull)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Dependable, grounded, service-oriented, and thrives in long-term commitments and leadership." },
+      { name: "Hasta", ruler: "Moon", yoni: "Mahisha (Buffalo)", gana: "Deva (Divine)", nadi: "Adi (Vata)", trait: "Skilled craftsman, industrious, calm under pressure, and possesses strong practical endurance." },
+      { name: "Chitra", ruler: "Mars", yoni: "Vyaghra (Tiger)", gana: "Rakshasa (Fiery)", nadi: "Madhya (Pitta)", trait: "Dynamic, courageous, charismatic, eye for perfection, and fearless in pursuing ambitions." },
+      { name: "Swati", ruler: "Rahu", yoni: "Mahisha (Buffalo)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Independent, diplomatic, business-savvy, and values personal freedom above all." },
+      { name: "Vishakha", ruler: "Jupiter", yoni: "Vyaghra (Tiger)", gana: "Rakshasa (Fiery)", nadi: "Antya (Kapha)", trait: "Single-minded focus on goals, persuasive speaker, and unstoppable once committed." },
+      { name: "Anuradha", ruler: "Saturn", yoni: "Mriga (Deer)", gana: "Deva (Divine)", nadi: "Madhya (Pitta)", trait: "Gentle, cooperative, builds lifelong friendships, and succeeds in foreign or group ventures." },
+      { name: "Jyeshtha", ruler: "Mercury", yoni: "Mriga (Deer)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Protective elder energy, sharp intellect, alert, and excels in positions of authority." },
+      { name: "Mula", ruler: "Ketu", yoni: "Shwana (Dog)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Investigative, gets to the root of every matter, courageous, and spiritually transformative." },
+      { name: "Purva Ashadha", ruler: "Venus", yoni: "Vanara (Monkey)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Invincible spirit, persuasive, adaptable, witty, and inspiring to others." },
+      { name: "Uttara Ashadha", ruler: "Sun", yoni: "Nakula (Mongoose)", gana: "Manushya (Human)", nadi: "Antya (Kapha)", trait: "Righteous, fearless problem-solver, enduring success, and victorious over obstacles." },
+      { name: "Shravana", ruler: "Moon", yoni: "Vanara (Monkey)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Clever listener, learned, adaptable, and excels in counseling, media, or knowledge fields." },
+      { name: "Dhanishta", ruler: "Mars", yoni: "Simha (Lion)", gana: "Rakshasa (Fiery)", nadi: "Madhya (Pitta)", trait: "Royal courage, musical/rhythmic affinity, ambitious, and naturally commands respect." },
+      { name: "Shatabhisha", ruler: "Rahu", yoni: "Ashwa (Horse)", gana: "Rakshasa (Fiery)", nadi: "Adi (Vata)", trait: "Healer, innovative thinker, values privacy, and excels in research or technology." },
+      { name: "Purva Bhadrapada", ruler: "Jupiter", yoni: "Simha (Lion)", gana: "Manushya (Human)", nadi: "Adi (Vata)", trait: "Passionate, visionary, fearless, and capable of profound spiritual and material breakthroughs." },
+      { name: "Uttara Bhadrapada", ruler: "Saturn", yoni: "Gau (Cow/Bull)", gana: "Manushya (Human)", nadi: "Madhya (Pitta)", trait: "Deep wisdom, compassionate, emotionally anchored, and brings stability to everyone around." },
+      { name: "Revati", ruler: "Mercury", yoni: "Gaja (Elephant)", gana: "Deva (Divine)", nadi: "Antya (Kapha)", trait: "Prosperous, empathetic, protective guide, and blessed with artistic and spiritual abundance." }
+    ];
+
+    const rashiData = [
+      { name: "Mesha (Aries)", lord: "Mars (Mangal)", varna: "Kshatriya (Warrior)", vashya: "Chatushpada (Quadruped)" },
+      { name: "Vrishabha (Taurus)", lord: "Venus (Shukra)", varna: "Vaishya (Merchant)", vashya: "Chatushpada (Quadruped)" },
+      { name: "Mithuna (Gemini)", lord: "Mercury (Budh)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
+      { name: "Karka (Cancer)", lord: "Moon (Chandra)", varna: "Brahmin (Scholar)", vashya: "Jalachara (Water)" },
+      { name: "Simha (Leo)", lord: "Sun (Surya)", varna: "Kshatriya (Warrior)", vashya: "Vanachara (Wild)" },
+      { name: "Kanya (Virgo)", lord: "Mercury (Budh)", varna: "Vaishya (Merchant)", vashya: "Dwipada (Human)" },
+      { name: "Tula (Libra)", lord: "Venus (Shukra)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
+      { name: "Vrishchika (Scorpio)", lord: "Mars (Mangal)", varna: "Brahmin (Scholar)", vashya: "Keeta (Insect/Mystic)" },
+      { name: "Dhanu (Sagittarius)", lord: "Jupiter (Guru)", varna: "Kshatriya (Warrior)", vashya: "Dwipada (Human)" },
+      { name: "Makara (Capricorn)", lord: "Saturn (Shani)", varna: "Vaishya (Merchant)", vashya: "Jalachara (Water)" },
+      { name: "Kumbha (Aquarius)", lord: "Saturn (Shani)", varna: "Shudra (Service/Skill)", vashya: "Dwipada (Human)" },
+      { name: "Meena (Pisces)", lord: "Jupiter (Guru)", varna: "Brahmin (Scholar)", vashya: "Jalachara (Water)" }
+    ];
+
+    function reduceToSingle(num) {
+      while (num > 9) {
+        num = String(num).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+      }
+      return num;
+    }
+
+    function calcKuaNumber(yearStr, gender) {
+      const yearSum = reduceToSingle(yearStr.split('').reduce((a, b) => a + parseInt(b, 10), 0));
+      if (gender === 'male') {
+        let k = 11 - yearSum;
+        return reduceToSingle(k);
+      } else {
+        let k = yearSum + 4;
+        return reduceToSingle(k);
+      }
+    }
+
+    // Astronomical Sidereal Moon Longitude approximation (Lahiri Ayanamsa)
+    function calculateVedicMoonDetails(dobStr, tobStr) {
+      const [y, m, d] = dobStr.split('-').map(Number);
+      const [hr, min] = (tobStr || "12:00").split(':').map(Number);
+      // Assume IST (+5:30) offset as standard baseline for Vedic calculations
+      const utcDate = Date.UTC(y, m - 1, d, hr, min) - (5.5 * 3600 * 1000);
+      const jd = (utcDate / 86400000) + 2440587.5;
+      const d2000 = jd - 2451545.0;
+
+      const deg2rad = Math.PI / 180;
+      const norm = (deg) => ((deg % 360) + 360) % 360;
+
+      // Mean elements of Moon
+      const L = norm(218.31617 + 13.17639648 * d2000);
+      const M_moon = norm(134.96292 + 13.06499295 * d2000);
+      const M_sun = norm(357.52772 + 0.98560028 * d2000);
+      const D = norm(297.85027 + 12.19074912 * d2000);
+      const F = norm(93.27209 + 13.22935024 * d2000);
+
+      // Major periodic perturbations
+      let tropLon = L
+        + 6.28875 * Math.sin(M_moon * deg2rad)
+        + 1.27402 * Math.sin((2 * D - M_moon) * deg2rad)
+        + 0.65831 * Math.sin(2 * D * deg2rad)
+        + 0.21362 * Math.sin(2 * M_moon * deg2rad)
+        - 0.18559 * Math.sin(M_sun * deg2rad)
+        - 0.11433 * Math.sin(2 * F * deg2rad);
+
+      // Lahiri Ayanamsa (~23.85 deg at J2000 + precession)
+      const ayanamsa = 23.853 + (d2000 / 365.25) * 0.01397;
+      const siderealLon = norm(tropLon - ayanamsa);
+
+      const nakshatraSpan = 360 / 27; // 13.3333 deg
+      const nakIndex = Math.floor(siderealLon / nakshatraSpan) % 27;
+      const pada = Math.floor((siderealLon % nakshatraSpan) / (nakshatraSpan / 4)) + 1;
+      const rashiIndex = Math.floor(siderealLon
